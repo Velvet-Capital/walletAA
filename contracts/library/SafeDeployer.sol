@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity 0.8.16;
+pragma solidity 0.8.19;
+import {Safe} from "@safe-global/safe-contracts/contracts/Safe.sol";
+import {SafeProxy} from "@safe-global/safe-contracts/contracts/SafeProxy/SafeProxy.sol";
 
 import {MultiSend} from "@safe-global/safe-contracts/contracts/libraries/MultiSend.sol";
 import {Module} from "@gnosis.pm/zodiac/contracts/core/Module.sol";
-import {SafeProxyFactory} from "@safe-global/safe-contracts/contracts/proxies/SafeProxyFactory.sol";
+import {SafeProxyFactory} from "@safe-global/safe-contracts/contracts/SafeProxy/SafeProxyFactory.sol";
 
-import {WaletAASafeModule} from "contract/vault/WaletAASafeModule.sol";
+import {WaletAASafeModule} from "../vault/WaletAASafeModule.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
-import {WaletAASafeModule} from "./vault/WaletAASafeModule.sol";
+import {WaletAASafeModule} from "../vault/WaletAASafeModule.sol";
 import {ErrorLibrary} from "./ErrorLibrary.sol";
 
 library SafeDeployer {
@@ -29,9 +31,11 @@ library SafeDeployer {
     address[] memory _owners,
     uint256 _threshold
   ) internal returns (address gnosisSafe, address velvetModule) {
-    SafeProxyFactory gnosisSafeProxyFactory = SafeProxyFactory(_gnosisSafeProxyFactory);
-    Safe _safe = Safe(payable(SafeProxyFactory.createProxy(_gnosisSingleton, bytes(""))));
-    WaletAASafeModule _gnosisModule = WaletAASafeModule(Clones.clone(baseGnosisModule));
+    SafeProxyFactory factoryInstance = SafeProxyFactory(_gnosisSafeProxyFactory);
+    uint256 salt = 12345;
+    SafeProxy safeProxyAddress = factoryInstance.createProxyWithNonce(_gnosisSingleton, bytes(""), salt);
+
+Safe _safe = Safe(payable(safeProxyAddress));    WaletAASafeModule _gnosisModule = WaletAASafeModule(Clones.clone(baseGnosisModule));
     bytes memory _multisendAction = generateByteCode(address(_safe), address(_gnosisModule));
 
     _safe.setup(

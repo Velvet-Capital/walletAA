@@ -41,6 +41,8 @@ const chainIds = {
   ropsten: 3,
 };
 
+
+
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {
@@ -127,7 +129,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.8.16",
+        version: "0.8.19",
         settings: {
           optimizer: {
             enabled: true,
@@ -135,6 +137,15 @@ const config: HardhatUserConfig = {
           },
         },
       },
+      {
+        version: "0.8.19",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      }
     ],
   },
   mocha: {
