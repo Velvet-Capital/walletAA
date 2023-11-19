@@ -11,7 +11,7 @@ library FunctionParameters {
    * @param _gnosisSafeProxyFactory Address of the Gnosis Safe Proxy Factory
    */
   struct FactoryInitData {
-    address _baseVelvetGnosisSafeModuleAddress;
+    address _basetGnosisSafeModuleAddress;
     address _gnosisSingleton;
     address _gnosisFallbackLibrary;
     address _gnosisMultisendLibrary;

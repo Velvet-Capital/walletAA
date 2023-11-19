@@ -12,7 +12,9 @@ import {FunctionParameters} from "./FunctionParameters.sol";
 import { ErrorLibrary } from "./library/ErrorLibrary.sol";
 
 contract WalletAAFactory is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable, UUPSUpgradeable {
-  address internal baseVelvetGnosisSafeModuleAddress;
+  address internal baseGnosisSafeModuleAddress;
+      SafeDeployer.DeploymentConfig config;
+
   //Gnosis Helper Contracts
   address public gnosisSingleton;
   address public gnosisFallbackLibrary;
@@ -36,7 +38,7 @@ contract WalletAAFactory is Initializable, OwnableUpgradeable, ReentrancyGuardUp
     __Ownable_init();
     __ReentrancyGuard_init();
     if (
-      initData._baseVelvetGnosisSafeModuleAddress == address(0) ||
+      initData._basetGnosisSafeModuleAddress == address(0) ||
       initData._gnosisSingleton == address(0) ||
       initData._gnosisFallbackLibrary == address(0) ||
       initData._gnosisMultisendLibrary == address(0) ||
@@ -44,13 +46,13 @@ contract WalletAAFactory is Initializable, OwnableUpgradeable, ReentrancyGuardUp
     ) {
       revert ErrorLibrary.InvalidAddress();
     }
-    baseVelvetGnosisSafeModuleAddress = initData._baseVelvetGnosisSafeModuleAddress;
+    baseGnosisSafeModuleAddress = initData._basetGnosisSafeModuleAddress;
     gnosisSingleton = initData._gnosisSingleton;
     gnosisFallbackLibrary = initData._gnosisFallbackLibrary;
     gnosisMultisendLibrary = initData._gnosisMultisendLibrary;
     gnosisSafeProxyFactory = initData._gnosisSafeProxyFactory;
   }
-
+   
   /**
    * @notice This function enables to create a new non custodial portfolio
    * @param initData Accepts the input data from the user
@@ -83,18 +85,18 @@ contract WalletAAFactory is Initializable, OwnableUpgradeable, ReentrancyGuardUp
       _owner[0] = address(msg.sender);
       _threshold = 1;
     }
+      config.gnosisSingleton = gnosisSingleton;
+        config.gnosisSafeProxyFactory = gnosisSafeProxyFactory;
+        config.gnosisMultisendLibrary = gnosisMultisendLibrary;
+        config.gnosisFallbackLibrary = gnosisFallbackLibrary;
+        config.baseGnosisModule = baseGnosisSafeModuleAddress;
+        config.owners = [ msg.sender];
+        config.threshold = 1;
 
-    (vaultAddress, module) = SafeDeployer.deployGnosisSafeAndModule(
-      gnosisSingleton,
-      gnosisSafeProxyFactory,
-      gnosisMultisendLibrary,
-      gnosisFallbackLibrary,
-      baseVelvetGnosisSafeModuleAddress,
-      _owner,
-      _threshold
-    );
+    (vaultAddress, module) = SafeDeployer.deployGnosisSafeAndModule(config);
   
     IWaletAASafeModule(address(module)).setUp(
+
       abi.encode(vaultAddress, address(this), address(gnosisMultisendLibrary))
     );
 
@@ -147,16 +149,16 @@ contract WalletAAFactory is Initializable, OwnableUpgradeable, ReentrancyGuardUp
       _owner[0] = address(msg.sender);
       _threshold = 1;
     }
+      config.gnosisSingleton = gnosisSingleton;
+        config.gnosisSafeProxyFactory = gnosisSafeProxyFactory;
+        config.gnosisMultisendLibrary = gnosisMultisendLibrary;
+        config.gnosisFallbackLibrary = gnosisFallbackLibrary;
+        config.baseGnosisModule = baseGnosisSafeModuleAddress;
+        config.owners = [ msg.sender];
+        config.threshold = 1;
 
     (vaultAddress, module) = SafeDeployer.deployGnosisSafeAndModule(
-      gnosisSingleton,
-      gnosisSafeProxyFactory,
-      gnosisMultisendLibrary,
-      gnosisFallbackLibrary,
-      baseVelvetGnosisSafeModuleAddress,
-      _owner,
-      _threshold
-    );
+     config );
     IWaletAASafeModule(address(module)).setUp(
       abi.encode(vaultAddress, address(this), address(gnosisMultisendLibrary))
     );
